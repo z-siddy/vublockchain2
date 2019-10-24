@@ -5,31 +5,12 @@
 #ifndef VUBLOCKCHAIN_HASH_H
 #define VUBLOCKCHAIN_HASH_H
 
-#include <chrono>
 #include "main.h"
 #include <vector>
 #include <random>
 #include <sstream>
-#include <fstream>
 
 namespace hash {
-
-    class Timer {
-    private:
-        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-        std::chrono::duration<float> duration;
-    public:
-        void startClock() {
-            start = std::chrono::high_resolution_clock::now();
-        }
-
-        void endClock(const string &opName) {
-            end = std::chrono::high_resolution_clock::now();
-            duration = end-start;
-            cout << endl << opName <<  " took: " << duration.count() << " s" << std::endl;
-
-        }
-    };
 
     class Hash {
     private:

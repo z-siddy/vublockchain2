@@ -11,6 +11,7 @@
 #include <string>
 #include <random>
 #include <algorithm>
+#include <vector>
 
 using std::cout;
 using std::endl;
