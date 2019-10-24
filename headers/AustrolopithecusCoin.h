@@ -38,6 +38,22 @@ namespace aCoin {
 
     };
 
+    class Block{
+
+        private:
+            std::vector<Transaction> _transactions;
+            string _previousHash;
+            string _timestamp;
+            string _version;
+            string _merkelHash;
+            long int _nonce;
+            long int _difficultyTarget;
+
+        public:
+            void push_transaction(Transaction a){ _transactions.push_back(a); }
+
+    };
+
 }
 
 #endif //VUBLOCKCHAIN2_AUSTROLOPITHECUSCOIN_H
