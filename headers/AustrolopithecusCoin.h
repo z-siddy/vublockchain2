@@ -54,6 +54,22 @@ namespace aCoin {
 
     };
 
+    void generateUsers(int size, std::vector<User> &users) {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist(1,1000000);
+        for(int i=1;i<=size;i++){
+            string name = "vardas"+std::to_string(i);
+            double balance = dist(rng);
+            hash::Hash temp;
+            temp.getInput(name);
+            string key = temp.hashThis();
+            User user(name, balance, key);
+            users.push_back(user);
+        }
+
+    }
+
 }
 
 #endif //VUBLOCKCHAIN2_AUSTROLOPITHECUSCOIN_H
