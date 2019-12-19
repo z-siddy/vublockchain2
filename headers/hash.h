@@ -17,10 +17,11 @@ namespace hash {
         string _hashedValue;
         string _inputValue;
         std::vector<int> hashVec;
-        void divideToBlocks() {
-            for(auto i = _inputValue.begin(); i != _inputValue.end(); ++i) {
+        void divideToBlocks(string in) {
+            for(auto i = in.begin(); i != in.end(); ++i) {
                 hashVec.push_back((*i)^hashVec.size());
             }
+            _inputValue = in;
         };
         void getHashedValue() {
             long long int seed = std::accumulate(hashVec.begin(), hashVec.end(), hashVec.size()) + (int)_inputValue[0]*6969/(_inputValue.length()+2) * 69;
@@ -42,13 +43,8 @@ namespace hash {
             _hashedValue = hashStream.str();
         };
     public:
-        void getInput(string in) {
-            _inputValue = std::move(in);
-        };
-
-
-        string hashThis() {
-            divideToBlocks();
+        string hashThis(string in) {
+            divideToBlocks(in);
             getHashedValue();
             return _hashedValue;
         };
