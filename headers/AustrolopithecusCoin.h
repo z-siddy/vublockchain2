@@ -24,9 +24,13 @@ namespace aCoin {
         string _public_key;
 
     public:
-        User(string name, double balance, string public_key): _name(std::move(name)), _balance(std::move(balance)), _public_key(std::move(public_key)) {};
+        User(string name, double balance, string public_key): _name(std::move(name)), _balance(balance), _public_key(std::move(public_key)) {};
+        User(): _name("null"), _balance(0), _public_key("null") {};
         string getKey() {
             return _public_key;
+        }
+        double getBalance(){
+            return _balance;
         }
         string getName() {
             return _name;
@@ -37,21 +41,30 @@ namespace aCoin {
     class Transaction {
 
     private:
-        unsigned long int _tid;
-        string _sender;
-        string _recipient;
+        string _tid;
         double _amount;
-        string _thash;
 
     public:
-        Transaction(unsigned long int id, string sender, string recipient, double amount): _tid(std::move(id)),
-                                                                                _sender(std::move(sender)), _recipient(std::move(recipient)), _amount(std::move(amount)) {
+        User _sender;
+        User _recipient;
+
+        Transaction(User sender, User recipient, double amount): _sender(std::move(sender)), _recipient(std::move(recipient)), _amount(amount) {
             Hash obj;
-            _thash = obj.hashThis(std::to_string(id) + std::to_string(amount) + sender + recipient);
+            _tid = obj.hashThis(std::to_string(amount) + sender.getKey() + recipient.getKey());
         };
 
         string hashedValue() {
-            return _thash;
+            return _tid;
+        }
+
+        double getAmount(){
+            return _amount;
+        }
+        string getSenderKey(){
+            return _sender.getKey();
+        }
+        string getRecipientKey(){
+            return _recipient.getKey();
         }
 
     };
@@ -80,7 +93,7 @@ namespace aCoin {
             std::mt19937 generate(rand());
             if (t.size() >= 100) {
                 for (int i = 0; i < 100; i++) {
-                    std::uniform_int_distribution < int > r(0, t.size() - 1);
+                    std::uniform_int_distribution < long int > r(0, t.size() - 1);
                     int pos = r(generate);
                     _transactions.push_back(t[pos]);
                     t.erase(t.begin() + pos);
@@ -137,6 +150,18 @@ namespace aCoin {
             std::cout << obj.hashThis(in) << std::endl;
         }
 
+        void multiMine(int difficulty, bool &success){
+            string substring(difficulty,'0');
+            for (int i=0;i<100000;i++){
+                if (strncmp(Block::getHash().c_str(), substring.c_str(), substring.size())==0){
+                    success=true;
+                }
+                else if (strncmp(Block::getHash().c_str(), substring.c_str(), substring.size())!=0){
+                    _nonce++;
+                }
+            }
+        }
+
     };
 
     void generateUsers(int size, std::vector < User > & users) {
@@ -156,16 +181,16 @@ namespace aCoin {
     void generateTransactions(int numberOfTransactions, std::vector<User> &userList, std::vector<Transaction> &list){
         std::random_device r;
         std::mt19937 generate(r());
-        std::uniform_int_distribution<unsigned long long int> random(0,userList.size()-1);
+        std::uniform_int_distribution<long int> random(0,userList.size()-1);
         std::uniform_int_distribution<int> randomTrans(0,10000);
         Hash obj;
         std::vector<Transaction> tempTransList;
 
         for (int i = 0; i < numberOfTransactions; i++)
         {
-            string senderKey = userList[random(generate)].getKey();
-            string recipientKey = userList[random(generate)].getKey();
-            Transaction tmpTrans(i, obj.hashThis(senderKey), obj.hashThis(recipientKey), randomTrans(generate));
+            User sender = userList[random(generate)];
+            User recipient = userList[random(generate)];
+            Transaction tmpTrans(sender, recipient, randomTrans(generate));
             tempTransList.push_back(tmpTrans);
         }
         std::cout<<"Transactions generated"<<std::endl;
@@ -182,6 +207,37 @@ namespace aCoin {
         oss << std::put_time(&bt, "%H:%M:%S");
         oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
         return oss.str();
+    }
+
+    void validateTransactions(std::vector<Transaction> transactions_){
+        Hash obj;
+        for (auto it=transactions_.begin(); it != transactions_.end(); it++){
+            if (it->hashedValue()!=obj.hashThis(std::to_string(it->getAmount())+it->getSenderKey()+it->getRecipientKey())){
+                transactions_.erase(it);
+            }
+        }
+    }
+    void balanceValidation(std::vector<Transaction> transactions_){
+        for (auto it=transactions_.begin(); it != transactions_.end(); it++){
+            if (it->_sender.getBalance()<(it->getAmount())){
+                transactions_.erase(it);
+            }
+        }
+    }
+
+    bool doMining(Block &mainB, std::vector<Transaction> T, int difficulty){
+        bool success=false;
+        mainB.genTestTransactions(T);
+        mainB.setMerkle();
+        mainB.multiMine(difficulty,success);
+        if (success){
+            mainB.printBlock();
+            return true;
+        }
+        else{
+            return false;
+        }
+
     }
 
 
